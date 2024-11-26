@@ -321,7 +321,7 @@ class EncodingModel_LLM2vec(nn.Module):
         nn.Module.__init__(self)
         self.config = config
         self.tokenizer = AutoTokenizer.from_pretrained(
-                "McGill-NLP/LLM2Vec-Mistral-7B-Instruct-v2-mntp",
+                "McGill-NLP/-Mistral-7B-Instruct-v2-mntp",
             )
         self.encoder = LLM2Vec.from_pretrained(
             "McGill-NLP/LLM2Vec-Mistral-7B-Instruct-v2-mntp",
