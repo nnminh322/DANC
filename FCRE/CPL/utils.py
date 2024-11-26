@@ -156,29 +156,34 @@ class Moment:
 
 
 
-from openai import OpenAI
+import time
+import google.generativeai as genai
+import os
+
+# Cấu hình API key của Gemini
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
 def gpt(input, t=0, key=None):
     MAX_TRIES = 15
-    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     
     while MAX_TRIES > 0:
         try:
-            time.sleep(5)
-            completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": input}
-            ]
-            ,
-            temperature=t
+            time.sleep(5)  # Tạm dừng giữa các lần gọi API
 
+            # Gọi API của Google Gemini
+            response = genai.generate_text(
+                model='gemini-1.5-flash-latest',
+                prompt=input,
+                temperature=t
             )
-            return completion.choices[0].message.content
+            
+            # Trả về nội dung được tạo ra
+            return response.text
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
             MAX_TRIES -= 1
-    print('gen failed')
+    
+    print('Generation failed')
     return ''
 
 def parse(rel2id, text):
