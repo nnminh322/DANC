@@ -71,7 +71,7 @@ class BERTLLMDataset(Dataset):
     def __getitem__(self, idx):
         return (self.data[idx], idx)
 
-    def collate_fn(data):
+    def collate_fn(self, data):
         # In ra data để kiểm tra cấu trúc
         print(data)
         batch_instance = {}
