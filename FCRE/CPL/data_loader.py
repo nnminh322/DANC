@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
+from transformers import BertTokenizer
 
 def get_data_loader_BERT(config, data, shuffle = False, drop_last = False, batch_size = None):
     if batch_size == None:
@@ -81,7 +82,8 @@ class BERTLLMDataset(Dataset):
 
     def collate_fn(self, data):
         # print(data)
-        print(f'config: {vars(self.config)}')
+        # print(f'config: {vars(self.config)}')
+        tokenizer = BertTokenizer.from_pretrained(self.config['bert_path'])
         batch_instance = {'input': [],'ids': [], 'mask': []} 
         batch_label = []
         batch_idx = []
@@ -90,6 +92,9 @@ class BERTLLMDataset(Dataset):
         batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
         batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
         # batch_instance['input'] = [item[0]['index'] for item in data]
+        input_ids = [item[0]['ids'] for item in data]
+        batch_instance['input'] = [tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
+
 
         batch_idx = torch.tensor([item[1] for item in data])
         
