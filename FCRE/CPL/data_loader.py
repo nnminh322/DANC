@@ -71,17 +71,26 @@ class BERTLLMDataset(Dataset):
     def __getitem__(self, idx):
         return (self.data[idx], idx)
 
-    def collate_fn(self, data):
-        batch_instance = {'input': [],'ids': [], 'mask': []} 
-        batch_label = []
-        batch_idx = []
-
-        batch_label = torch.tensor([item[0]['relation'] for item in data])
-        batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
-        batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
+    def collate_fn(data):
+        # In ra data để kiểm tra cấu trúc
+        print(data)
+        batch_instance = {}
         batch_instance['input'] = [item[0]['input'] for item in data]
+        # Thực hiện các thao tác khác nếu cần
+        return batch_instance
 
-        batch_idx = torch.tensor([item[1] for item in data])
+    # def collate_fn(self, data):
+
+    #     batch_instance = {'input': [],'ids': [], 'mask': []} 
+    #     batch_label = []
+    #     batch_idx = []
+
+    #     batch_label = torch.tensor([item[0]['relation'] for item in data])
+    #     batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
+    #     batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
+    #     batch_instance['input'] = [item[0]['input'] for item in data]
+
+    #     batch_idx = torch.tensor([item[1] for item in data])
         
-        return batch_instance, batch_label, batch_idx
+    #     return batch_instance, batch_label, batch_idx
     
