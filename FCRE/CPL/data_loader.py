@@ -81,7 +81,7 @@ class BERTLLMDataset(Dataset):
 
     def collate_fn(self, data):
         # print(data)
-        print(f'config: {str(self.config)}')
+        print(f'config: {vars(self.config)}')
         batch_instance = {'input': [],'ids': [], 'mask': []} 
         batch_label = []
         batch_idx = []
