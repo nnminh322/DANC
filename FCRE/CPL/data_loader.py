@@ -83,7 +83,7 @@ class BERTLLMDataset(Dataset):
     def collate_fn(self, data):
         # print(data)
         # print(f'config: {vars(self.config)}')
-        tokenizer = BertTokenizer.from_pretrained(self.config['bert_path'])
+        tokenizer = BertTokenizer.from_pretrained(self.config.bert_path)
         batch_instance = {'input': [],'ids': [], 'mask': []} 
         batch_label = []
         batch_idx = []
