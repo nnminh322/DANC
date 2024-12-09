@@ -88,7 +88,6 @@ class BERTLLMDataset(Dataset):
         batch_label = torch.tensor([item[0]['relation'] for item in data])
         batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
         batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
-        batch_instance['input'] = [item[0]['ids'] for item in data]
         # batch_instance['input'] = [item[0]['index'] for item in data]
 
         batch_idx = torch.tensor([item[1] for item in data])
