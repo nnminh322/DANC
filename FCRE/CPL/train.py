@@ -463,7 +463,7 @@ if __name__ == '__main__':
             config.rel_cluster_label = './data/CFRLTacred/CFRLdata_6_100_5_10/rel_cluster_label_0.npy'
             config.training_data = './data/CFRLTacred/CFRLdata_6_100_5_10/train_0.txt'
             config.valid_data = './data/CFRLTacred/CFRLdata_6_100_5_10/valid_0.txt'
-            config.test_data = './data/CFRLTacred/CFRLdata_6_100_5_10/test_0.txt'        
+            config.test_data = './data/CFRLTacred/CFRLdata_6_10_5_10/test_0.txt'        
 
     
     logger = logging.getLogger()
