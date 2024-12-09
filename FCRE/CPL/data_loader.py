@@ -81,7 +81,7 @@ class BERTLLMDataset(Dataset):
 
     def collate_fn(self, data):
         # print(data)
-        print(self.config.model_dir)
+        print(f'model_dir: {self.config.model_dir}')
         batch_instance = {'input': [],'ids': [], 'mask': []} 
         batch_label = []
         batch_idx = []
