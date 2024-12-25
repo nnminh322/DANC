@@ -8,6 +8,7 @@ from transformers import AutoTokenizer
 # from openai import OpenAI
 import json
 import google.generativeai as genai
+import time
 # from kaggle_secrets import UserSecretsClient
 
 # user_secrets = UserSecretsClient()
@@ -87,6 +88,7 @@ def api_call(input_prompt: str):
             # )
             # content = completion.choices[0].message.content
             response = model.generate_content(input_prompt)
+            time.sleep(1)
             content = response.text
             content = "[" + content.split("[")[-1].split("]")[0] + "]"
             return json.loads(content)
