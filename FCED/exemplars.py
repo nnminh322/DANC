@@ -5,11 +5,20 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from configs import parse_arguments
 from transformers import AutoTokenizer
-from openai import OpenAI
+# from openai import OpenAI
 import json
+import google.generativeai as genai
+# from kaggle_secrets import UserSecretsClient
+
+# user_secrets = UserSecretsClient()
+# api_key = user_secrets.get_secret("GEMINI_API_KEY")
+genai.configure(api_key = "AIzaSyBirlOrEJBDn9irZTST7LAISKfhRgaJy9o")
+
+# Generate content
+model = genai.GenerativeModel(model_name='gemini-1.5-flash-latest')
 
 
-client = OpenAI(api_key="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")
+# client = OpenAI(api_key="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")
 
 args = parse_arguments()
 tokenizer = AutoTokenizer.from_pretrained(args.backbone)
@@ -66,17 +75,19 @@ def api_call(input_prompt: str):
     retry = 3
     while retry > 0:
         try:
-            completion = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {
-                        "role": "user",
-                        "content": input_prompt
-                    }
-                ]
-            )
-            content = completion.choices[0].message.content
+            # completion = client.chat.completions.create(
+            #     model="gpt-4o",
+            #     messages=[
+            #         {"role": "system", "content": "You are a helpful assistant."},
+            #         {
+            #             "role": "user",
+            #             "content": input_prompt
+            #         }
+            #     ]
+            # )
+            # content = completion.choices[0].message.content
+            response = model.generate_content(input_prompt)
+            content = response.text
             content = "[" + content.split("[")[-1].split("]")[0] + "]"
             return json.loads(content)
         except:
