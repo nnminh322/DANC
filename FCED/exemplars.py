@@ -13,7 +13,9 @@ import time
 
 # user_secrets = UserSecretsClient()
 # api_key = user_secrets.get_secret("GEMINI_API_KEY")
-genai.configure(api_key = "AIzaSyBirlOrEJBDn9irZTST7LAISKfhRgaJy9o")
+# genai.configure(api_key = "AIzaSyBirlOrEJBDn9irZTST7LAISKfhRgaJy9o")
+genai.configure(api_key = "AIzaSyDqn4mxuM4KYqX7KXM1F47BANVTiAdr1nE")
+
 
 # Generate content
 model = genai.GenerativeModel(model_name='gemini-1.5-flash-latest')
