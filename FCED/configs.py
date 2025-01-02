@@ -47,7 +47,7 @@ def parse_arguments():
     parser.add_argument('--decay', type=float, default=1e-4, help="")
     parser.add_argument('--no-freeze-bert', action='store_true')
     parser.add_argument('--dweight_loss', action='store_true')
-    parser.add_argument('--alpha', type=float, default=2.0)
+    # parser.add_argument('--alpha', type=float, default=2.0)
     parser.add_argument('--beta', type=float, default=3.0)
     parser.add_argument('--distill', required=True, choices=["fd", "pd", "mul", "none"])
     parser.add_argument('--rep-aug', required=True, choices=["none", "mean", "relative"])
