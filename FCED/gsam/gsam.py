@@ -1,8 +1,22 @@
 import torch
-from gsam_util import enable_running_stats, disable_running_stats
 import contextlib
 from torch.distributed import ReduceOp
+from torch.nn.modules.batchnorm import _BatchNorm
 
+def disable_running_stats(model):
+    def _disable(module):
+        if isinstance(module, _BatchNorm):
+            module.backup_momentum = module.momentum
+            module.momentum = 0
+
+    model.apply(_disable)
+
+def enable_running_stats(model):
+    def _enable(module):
+        if isinstance(module, _BatchNorm) and hasattr(module, "backup_momentum"):
+            module.momentum = module.backup_momentum
+
+    model.apply(_enable)
 
 class GSAM(torch.optim.Optimizer):
     def __init__(self, params, base_optimizer, model, gsam_alpha, rho_scheduler, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
