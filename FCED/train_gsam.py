@@ -625,13 +625,13 @@ def train(local_rank, args):
                             loss = loss + args.alpha * loss_fd + args.beta * loss_pd
                 if not args.gsam:
                     optimizer.zero_grad()
-                    optimizer.set_closure(loss)
+                    loss.backward()
                     optimizer.step()
                 else:
                     optimizer.zero_grad()
-                    optimizer.set_closure(loss)
+                    loss.backward()
                     optimizer.step()
-                    
+
                     return_dict = model(train_x, train_masks, train_span)
                     outputs, context_feat, trig_feat = (
                         return_dict["outputs"],
