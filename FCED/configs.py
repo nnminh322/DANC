@@ -73,7 +73,7 @@ def parse_arguments():
     parser.add_argument('--sam-type', type=str, default="current")    
     parser.add_argument('--asam', action="store_true")
     parser.add_argument('--asam-type', type=str, default="current")
-    parser.add_argument('--gsam', action="store_true")
+    parser.add_argument('--gsam', default=True)
     parser.add_argument('--gsam-type', type=str, default="current")
     ###
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")

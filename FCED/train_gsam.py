@@ -135,7 +135,7 @@ def train(local_rank, args):
     streams_indexed = [[label2idx[l] for l in st] for st in streams]
     model = BertED(args.class_num + 1, args.input_map)  # define model
     model.to(device)
-    optimizer = GSAM(
+    optimizer = AdamW(
         model.parameters(),
         lr=args.lr,
         weight_decay=args.decay,
