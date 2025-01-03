@@ -24,7 +24,7 @@ class GSAM(torch.optim.Optimizer):
         super(GSAM, self).__init__(params, defaults)
         self.model = model
         self.base_optimizer = base_optimizer
-        self.param_groups = self.base_optimizer.add_param_group
+        self.param_groups = self.base_optimizer.param_groups
         self.adaptive = adaptive
         self.rho_scheduler = rho_scheduler
         self.perturb_eps = perturb_eps

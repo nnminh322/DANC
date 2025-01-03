@@ -277,7 +277,7 @@ def train(local_rank, args):
             # prev_model.to(args.device)   # TODO: test use
         
         if args.gsam:
-            base_optimizer = AdamW
+            base_optimizer = torch.optim.SGD
             
             scheduler = CosineScheduler(
                 T_max=args.epochs * len(stage_loader),
