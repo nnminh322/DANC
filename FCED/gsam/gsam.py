@@ -133,7 +133,7 @@ class GSAM(torch.optim.Optimizer):
             return contextlib.ExitStack()
 
     @torch.no_grad()
-    def set_closure(self, loss_fn, inputs, targets, **kwargs):
+    def set_closure(self, loss_fn):
         # create self.forward_backward_func, which is a function such that
         # self.forward_backward_func() automatically performs forward and backward passes.
         # This function does not take any arguments, and the inputs and targets data
@@ -142,11 +142,10 @@ class GSAM(torch.optim.Optimizer):
         def get_grad():
             self.base_optimizer.zero_grad()
             with torch.enable_grad():
-                outputs = self.model(inputs)
-                loss = loss_fn(outputs, targets, **kwargs)
+                loss = loss_fn
             loss_value = loss.data.clone().detach()
             loss.backward()
-            return outputs, loss_value
+            return loss_value
 
         self.forward_backward_func = get_grad
 

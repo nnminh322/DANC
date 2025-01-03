@@ -617,14 +617,14 @@ def train(local_rank, args):
                         loss_pd = 0
                     # loss_pd = criterion_pd(torch.cat([item / T for item in outputs]), torch.cat([item / T for item in prev_outputs]))
                     if args.dweight_loss and stage > 0:
-                        if (not args.sam) or (args.sam_type == "full"):
+                        if (not args.gsam) or (args.gsam_type == "full"):
                             loss = loss * (1 - w) + (loss_fd + loss_pd) * w
                     else:
-                        if (not args.sam) or (args.sam_type == "full"):
+                        if (not args.gsam) or (args.gsam_type == "full"):
                             loss = loss + args.alpha * loss_fd + args.beta * loss_pd
-                if not args.sam:
+                if not args.gsam:
                     optimizer.zero_grad()
-                    loss.backward()
+                    optimizer.set_closure(loss)
                     optimizer.step()
                 else:
                     optimizer.zero_grad()
@@ -1064,6 +1064,9 @@ def train(local_rank, args):
                         dev_scores_ls.append(dev_score if dev_score else micro_F1)
                         logger.info(f"Dev scores list: {dev_scores_ls}")
                         logger.info(f"bc:{bc}")
+
+                    optimizer.update_rho_t()
+
 
         for tp in streams_indexed[stage]:
             if not tp == 0:
