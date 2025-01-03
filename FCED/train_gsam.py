@@ -144,6 +144,13 @@ def train(local_rank, args):
     )  # TODO: Hyper parameters
     if args.gsam:
         base_optimizer = AdamW
+        
+        scheduler = CosineScheduler(
+            T_max=args.epochs * len(stage_loader),
+            max_value=args.learning_rate,
+            min_value=0.0,
+            optimizer=base_optimizer,
+        )
         rho_scheduler = ProportionScheduler(
             pytorch_lr_scheduler=scheduler,
             max_lr=args.learning_rate,
@@ -151,13 +158,6 @@ def train(local_rank, args):
             max_value=args.rho_max,
             min_value=args.rho_min,
         )
-        scheduler = CosineScheduler(
-            T_max=args.epochs * len(stage_loader),
-            max_value=args.learning_rate,
-            min_value=0.0,
-            optimizer=base_optimizer,
-        )
-
         optimizer = GSAM(
             params=model.parameters(),
             base_optimizer=base_optimizer,
