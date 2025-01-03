@@ -629,9 +629,9 @@ def train(local_rank, args):
                     optimizer.step()
                 else:
                     optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.first_step(zero_grad=True)
-
+                    optimizer.set_closure(loss)
+                    optimizer.step()
+                    
                     return_dict = model(train_x, train_masks, train_span)
                     outputs, context_feat, trig_feat = (
                         return_dict["outputs"],
