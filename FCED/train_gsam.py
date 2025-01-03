@@ -135,7 +135,7 @@ def train(local_rank, args):
     streams_indexed = [[label2idx[l] for l in st] for st in streams]
     model = BertED(args.class_num + 1, args.input_map)  # define model
     model.to(device)
-    optimizer = AdamW(
+    base_optimizer = AdamW(
         model.parameters(),
         lr=args.lr,
         weight_decay=args.decay,
@@ -176,7 +176,7 @@ def train(local_rank, args):
         logger.info(f"Resuming from {args.resume}")
         state_dict = torch.load(args.resume)
         model.load_state_dict(state_dict["model"])
-        optimizer.load_state_dict(state_dict["optimizer"])
+        base_optimizer.load_state_dict(state_dict["optimizer"])
         task_idx = task_idx[state_dict["stage"] :]
         # TODO: test use
         labels = state_dict["labels"]
@@ -277,8 +277,7 @@ def train(local_rank, args):
             # prev_model.to(args.device)   # TODO: test use
         
         if args.gsam:
-            base_optimizer = torch.optim.SGD
-            
+
             scheduler = CosineScheduler(
                 T_max=args.epochs * len(stage_loader),
                 max_value=args.learning_rate,
