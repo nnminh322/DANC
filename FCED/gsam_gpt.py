@@ -42,34 +42,26 @@ class GSAM(torch.optim.Optimizer):
 
         if zero_grad: 
             self.zero_grad()
-
+            
     @torch.no_grad()
-    def second_step(self, closure, zero_grad=False):
+    def second_step(self, zero_grad=False, closure=None):
         """
-        Second step: Regularize gradients and apply the optimizer update.
+        Perform the second optimization step. The closure is optional and not required if the loss is precomputed.
         """
-        closure = torch.enable_grad()(closure)  # Compute gradients again
-        closure()  # Recompute gradients at perturbed weights
-
-        # Compute gradient alignment regularization
         for group in self.param_groups:
-            alpha = group["alpha"]
             for p in group["params"]:
-                if p.grad is None: 
+                if p.grad is None:
                     continue
-                perturbed_grad = p.grad
-                p.data = self.state[p]["old_p"]  # Restore original weights
+                p.data = self.state[p]["old_p"]  # Restore original parameters
 
-                # Regularize using gradient alignment
-                if "prev_grad" in self.state[p]:
-                    original_grad = self.state[p]["prev_grad"]
-                    align_reg = alpha * torch.dot(original_grad.flatten(), perturbed_grad.flatten())
-                    p.grad.add_(-align_reg)
+        if closure is not None:
+            closure()
 
-        self.base_optimizer.step()  # Apply optimizer update
+        self.base_optimizer.step()  # Perform the optimization update
 
-        if zero_grad: 
+        if zero_grad:
             self.zero_grad()
+
 
     @torch.no_grad()
     def step(self, closure=None):
