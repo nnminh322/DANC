@@ -135,7 +135,7 @@ def train(local_rank, args):
     streams_indexed = [[label2idx[l] for l in st] for st in streams]
     model = BertED(args.class_num + 1, args.input_map)  # define model
     model.to(device)
-    optimizer = AdamW(
+    optimizer = GSAM(
         model.parameters(),
         lr=args.lr,
         weight_decay=args.decay,
@@ -1066,7 +1066,6 @@ def train(local_rank, args):
                         logger.info(f"bc:{bc}")
 
                     optimizer.update_rho_t()
-
 
         for tp in streams_indexed[stage]:
             if not tp == 0:
