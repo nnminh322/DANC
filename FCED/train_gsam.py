@@ -142,30 +142,7 @@ def train(local_rank, args):
         eps=args.adamw_eps,
         betas=(0.9, 0.999),
     )  # TODO: Hyper parameters
-    if args.gsam:
-        base_optimizer = AdamW
-        
-        scheduler = CosineScheduler(
-            T_max=args.epochs * len(stage_loader),
-            max_value=args.learning_rate,
-            min_value=0.0,
-            optimizer=base_optimizer,
-        )
-        rho_scheduler = ProportionScheduler(
-            pytorch_lr_scheduler=scheduler,
-            max_lr=args.learning_rate,
-            min_lr=0.0,
-            max_value=args.rho_max,
-            min_value=args.rho_min,
-        )
-        optimizer = GSAM(
-            params=model.parameters(),
-            base_optimizer=base_optimizer,
-            model=model,
-            gsam_alpha=args.alpha,
-            rho_scheduler=rho_scheduler,
-            adaptive=args.adaptive,
-        )
+    
     # if args.amp:
     # model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
     if args.parallel == "DDP":
@@ -298,6 +275,31 @@ def train(local_rank, args):
 
                 e_loader = exemplars.build_stage_loader(MAVEN_Dataset([], [], [], []))
             # prev_model.to(args.device)   # TODO: test use
+        
+        if args.gsam:
+            base_optimizer = AdamW
+            
+            scheduler = CosineScheduler(
+                T_max=args.epochs * len(stage_loader),
+                max_value=args.learning_rate,
+                min_value=0.0,
+                optimizer=base_optimizer,
+            )
+            rho_scheduler = ProportionScheduler(
+                pytorch_lr_scheduler=scheduler,
+                max_lr=args.learning_rate,
+                min_lr=0.0,
+                max_value=args.rho_max,
+                min_value=args.rho_min,
+            )
+            optimizer = GSAM(
+                params=model.parameters(),
+                base_optimizer=base_optimizer,
+                model=model,
+                gsam_alpha=args.alpha,
+                rho_scheduler=rho_scheduler,
+                adaptive=args.adaptive,
+            )
 
         for item in streams_indexed[stage]:
             if not item in learned_types:
