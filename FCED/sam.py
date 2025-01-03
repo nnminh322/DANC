@@ -36,6 +36,18 @@ class SAM(torch.optim.Optimizer):
         self.base_optimizer.step()  # do the actual "sharpness-aware" update
 
         if zero_grad: self.zero_grad()
+        
+    @torch.no_grad()
+    def second_step(self, zero_grad=False):
+        for group in self.param_groups:
+            for p in group["params"]:
+                if p.grad is None:
+                    continue
+                p.sub_(self.state[p]["eps"])
+        self.base_optimizer.step()
+
+        if zero_grad:
+            self.zero_grad()
 
     @torch.no_grad()
     def step(self, closure=None):
@@ -45,6 +57,7 @@ class SAM(torch.optim.Optimizer):
         self.first_step(zero_grad=True)
         closure()
         self.second_step()
+    
 
     def _grad_norm(self):
         shared_device = self.param_groups[0]["params"][0].device  # put everything on the same device, in case of model parallelism
