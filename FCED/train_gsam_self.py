@@ -69,7 +69,7 @@ def train(local_rank, args):
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
     if args.gsam:
-            base_optimizer = AdamW
+            base_optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
             optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=True, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
@@ -395,6 +395,7 @@ def train(local_rank, args):
                 else:
                     optimizer.zero_grad()
                     loss.backward()
+                    print("using GSAM")
                     optimizer.first_step(zero_grad=True)
 
                     return_dict = model(train_x, train_masks, train_span)
