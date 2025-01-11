@@ -13,8 +13,8 @@ import time
 
 # user_secrets = UserSecretsClient()
 # api_key = user_secrets.get_secret("GEMINI_API_KEY")
-# genai.configure(api_key = "AIzaSyBirlOrEJBDn9irZTST7LAISKfhRgaJy9o")
-genai.configure(api_key = "AIzaSyDqn4mxuM4KYqX7KXM1F47BANVTiAdr1nE") # ACE only
+genai.configure(api_key = "AIzaSyBirlOrEJBDn9irZTST7LAISKfhRgaJy9o")
+# genai.configure(api_key = "AIzaSyDqn4mxuM4KYqX7KXM1F47BANVTiAdr1nE") # ACE only
 # genai.configure(api_key = "AIzaSyDcUZtqYAbySiqyf-uoz4BARiQG0v4oehk") # MAVEN only
 
 

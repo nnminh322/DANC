@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.nn.functional import normalize
-from torch.optim import AdamW
+from torch.optim import AdamW, SGD
 from utils import *
 from configs import parse_arguments
 from model import BertED
@@ -395,7 +395,7 @@ def train(local_rank, args):
                 else:
                     optimizer.zero_grad()
                     loss.backward()
-                    print("using GSAM")
+                    # print("using GSAM")
                     optimizer.first_step(zero_grad=True)
 
                     return_dict = model(train_x, train_masks, train_span)
