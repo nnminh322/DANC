@@ -72,7 +72,7 @@ def train(local_rank, args):
     if args.gsam:
             base_optimizer = AdamW
             # scheduler = StepLR(base_optimizer,learning_rate=args.lr,total_epochs=args.epochs)
-            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
+            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=True, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
     if args.parallel == 'DDP':

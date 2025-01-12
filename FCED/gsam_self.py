@@ -8,10 +8,10 @@ def projection(source_vector, target_vector):
 
 
 class GSAM(torch.optim.Optimizer):
-    def __init__(self, params, base_optimizer, rho=0.05, **kwargs):
+    def __init__(self, params, base_optimizer, rho=0.05, adaptive=True, **kwargs):
         assert rho >= 0.0, f"Invalid rho, should be non-negative: {rho}"
 
-        defaults = dict(rho=rho, **kwargs)
+        defaults = dict(rho=rho, adaptive=adaptive, **kwargs)
         super(GSAM, self).__init__(params, defaults)
 
         self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
@@ -49,7 +49,11 @@ class GSAM(torch.optim.Optimizer):
                 self.state[p]["old_p"] = p.data.clone()
                 self.state[p]["old_grad"] = p.grad
                 # Calculate ascent step
-                e_w = p.grad * scale.to(p)
+                e_w = (
+                    (torch.pow(p, 2) if group["adaptive"] else 1.0)
+                    * p.grad
+                    * scale.to(p)
+                )
                 p.add_(e_w)  # Move to w_adv = w + e(w)
 
         if zero_grad:
@@ -80,7 +84,6 @@ class GSAM(torch.optim.Optimizer):
 
         # Perform the gradient descent step
         self.base_optimizer.step()
-        self.update_rho()
         if zero_grad:
             self.zero_grad()
 
@@ -104,7 +107,9 @@ class GSAM(torch.optim.Optimizer):
         norm = torch.norm(
             torch.stack(
                 [
-                    (p.grad).norm(p=2).to(shared_device)
+                    ((torch.abs(p) if group["adaptive"] else 1.0) * p.grad)
+                    .norm(p=2)
+                    .to(shared_device)
                     for group in self.param_groups
                     for p in group["params"]
                     if p.grad is not None
