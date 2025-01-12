@@ -18,6 +18,7 @@ import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
 from gsam_self import GSAM, projection
+from gsam.Step_Lr import *
 
 
 
@@ -67,10 +68,11 @@ def train(local_rank, args):
     streams_indexed = [[label2idx[l] for l in st] for st in streams]
     model = BertED(args.class_num+1, args.input_map) # define model
     model.to(device)
-    optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
+    # optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
     if args.gsam:
             base_optimizer = AdamW
-            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=True, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
+            # scheduler = StepLR(base_optimizer,learning_rate=args.lr,total_epochs=args.epochs)
+            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
     if args.parallel == 'DDP':
