@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from configs import parse_arguments
 from torch.nn.utils.rnn import unpad_sequence
 from random import shuffle
+import os
 
 args = parse_arguments()
 device = torch.device(args.device if torch.cuda.is_available() and args.device != 'cpu' else "cpu")  # type: ignore
@@ -79,3 +80,25 @@ class BertED(nn.Module):
 
     def forward_input_map(self, x):
         return self.input_map(x)
+    
+    def save_model(self, save_directory):
+        """
+        Save the model and its configuration.
+        """
+        if not os.path.exists(save_directory):
+            os.makedirs(save_directory)
+
+        # Save model weights
+        model_path = os.path.join(save_directory, "model.pth")
+        torch.save(self.state_dict(), model_path)
+
+        # Save configuration
+        config_path = os.path.join(save_directory, "config.pth")
+        torch.save({
+            "class_num": self.fc.out_features,
+            "input_map": self.is_input_mapping,
+            "input_dim": self.input_dim,
+            "map_hidden_dim": getattr(self, "map_hidden_dim", None)
+        }, config_path)
+
+        print(f"Model saved to {save_directory}")

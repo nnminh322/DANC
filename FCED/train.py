@@ -70,7 +70,7 @@ def train(local_rank, args):
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
     if args.sam:
             base_optimizer = AdamW
-            optimizer = SAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=False, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
+            optimizer = SAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=True, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
     if args.parallel == 'DDP':
@@ -677,6 +677,9 @@ def train(local_rank, args):
             logger.info(f'state_dict saved to: {os.path.join(save_pth, save_name)}')
             torch.save(state, os.path.join(save_pth, save_name))
             os.remove(e_pth)
+    
+    save_directory = "./saved_berted_model"
+    model.save_model(save_directory)
 
 
 
