@@ -35,7 +35,9 @@ class SAM(torch.optim.Optimizer):
                 # Apply sign and adjust gradient
                 sign_grad = torch.sign(p.grad)
                 e_w = sign_grad * torch.abs(p.grad) * scale.to(p)
-                p.add_(e_w)  # climb to the local maximum "w + e(w)"
+                p = p + e_w  # This is out-of-place
+
+                # p.add_(e_w)  # climb to the local maximum "w + e(w)"
         if zero_grad: self.zero_grad()
 
     @torch.no_grad()
