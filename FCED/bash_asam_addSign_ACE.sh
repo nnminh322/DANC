@@ -10,7 +10,7 @@ do
                 do
                     for p in 0 1 2 3 4
                     do
-                        CUDA_VISIBLE_DEVICES=0 python train.py \
+                        CUDA_VISIBLE_DEVICES=0 python train_asam.py \
                             --data-root ./augmented_data \
                             --stream-root ./augmented_data \
                             --dataset $d \

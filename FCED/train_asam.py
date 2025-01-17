@@ -17,7 +17,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
-from AdaptiveSAM import ASAM
+from asam_update_sign import ASAM
 
 
 # PERM_5 = [[0, 1, 2, 3, 4], [4, 3, 2, 1, 0], [0, 3, 1, 4, 2], [1, 2, 0, 3, 4], [3, 4, 0, 1, 2]]
@@ -67,7 +67,7 @@ def train(local_rank, args):
     model = BertED(args.class_num+1, args.input_map) # define model
     model.to(device)
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
-    if args.asam:
+    if args.sam:
             base_optimizer = AdamW
             optimizer = ASAM(params=model.parameters(), base_optimizer=base_optimizer, rho=args.rho, adaptive=True, lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
@@ -382,12 +382,12 @@ def train(local_rank, args):
                         loss_pd = 0
                     # loss_pd = criterion_pd(torch.cat([item / T for item in outputs]), torch.cat([item / T for item in prev_outputs]))
                     if args.dweight_loss and stage > 0:
-                        if (not args.asam) or (args.asam_type == "full"):
+                        if (not args.sam) or (args.sam_type == "full"):
                             loss = loss * (1 - w) + (loss_fd + loss_pd) * w
                     else:
-                        if (not args.asam) or (args.asam_type == "full"):
+                        if (not args.sam) or (args.sam_type == "full"):
                             loss = loss + args.alpha * loss_fd + args.beta * loss_pd
-                if not args.asam:
+                if not args.sam:
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
