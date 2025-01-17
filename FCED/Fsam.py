@@ -1,12 +1,12 @@
 import torch
 
 
-class SAM(torch.optim.Optimizer):
+class FSAM(torch.optim.Optimizer):
     def __init__(self, params, base_optimizer, rho=0.05, adaptive=True, **kwargs):
         assert rho >= 0.0, f"Invalid rho, should be non-negative: {rho}"
 
         defaults = dict(rho=rho, adaptive=adaptive, **kwargs)
-        super(SAM, self).__init__(params, defaults)
+        super(FSAM, self).__init__(params, defaults)
 
         self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
         self.param_groups = self.base_optimizer.param_groups
@@ -14,17 +14,38 @@ class SAM(torch.optim.Optimizer):
 
     @torch.no_grad()
     def first_step(self, zero_grad=False):
+        # Compute the norm of the gradients
         grad_norm = self._grad_norm()
+        
+        # Compute the total number of parameters (d)
+        d = sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+        # Loop through parameter groups
         for group in self.param_groups:
-            scale = group["rho"] / (grad_norm + 1e-12)
+            # Compute scaling factor: γ = sqrt(rho) / sqrt(d)
+            rho = group["rho"]
+            gamma = torch.sqrt(torch.tensor(rho))  # γ = sqrt(rho)
+            scale = gamma / torch.sqrt(torch.tensor(d).float())  # scale factor: γ / sqrt(d)
 
+            # Loop through parameters in the current group
             for p in group["params"]:
-                if p.grad is None: continue
-                self.state[p]["old_p"] = p.data.clone()
-                e_w = (torch.pow(p, 2) if group["adaptive"] else 1.0) * p.grad * scale.to(p)
-                p.add_(e_w)  # climb to the local maximum "w + e(w)"
+                if p.grad is None:
+                    continue
 
-        if zero_grad: self.zero_grad()
+                # Store the original parameter value
+                self.state[p]["old_p"] = p.data.clone()
+
+                # Compute the perturbation e_w
+                sign_grad = torch.sign(p.grad)  # Get the sign of the gradient
+                e_w = sign_grad * torch.abs(p.grad) * scale.to(p)  # perturbation: γ * (|∇L(θ)|) * 1/√d
+
+                # Apply the perturbation (in-place update is avoided)
+                p.data.add_(e_w)  # Apply the perturbation in-place: p = p + e_w
+                
+        # Zero gradients if specified
+        if zero_grad:
+            self.zero_grad()
+
 
     @torch.no_grad()
     def second_step(self, zero_grad=False):
