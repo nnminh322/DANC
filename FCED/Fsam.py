@@ -18,7 +18,7 @@ class FSAM(torch.optim.Optimizer):
         grad_norm = self._grad_norm()
         
         # Compute the total number of parameters (d)
-        d = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        d = sum(p.numel() for group in self.param_groups for p in group['params'] if p.requires_grad)
 
         # Loop through parameter groups
         for group in self.param_groups:
