@@ -1,4 +1,4 @@
-for d in ACE
+for d in ACE 
 do
     for i in 5
     do
@@ -10,7 +10,7 @@ do
                 do
                     for p in 0 1 2 3 4
                     do
-                        CUDA_VISIBLE_DEVICES=0 python train_gsam_self.py \
+                        CUDA_VISIBLE_DEVICES=0 python train.py \
                             --data-root ./augmented_data \
                             --stream-root ./augmented_data \
                             --dataset $d \
@@ -22,8 +22,8 @@ do
                             --batch-size 4 \
                             --device cuda:0 \
                             --log \
-                            --log-dir ./gsam/log_incremental/temp7_submax/first_wo_UCL+TCL/ \
-                            --tb-dir ./gsam/log_tensorboard/02-10-nomap-clreps\
+                            --log-dir ./sam/log_incremental/temp7_submax/first_wo_UCL+TCL/ \
+                            --tb-dir ./sam/log_tensorboard/02-10-nomap-clreps\
                             --log-name a${k}_lnone_r${i} \
                             --dweight_loss \
                             --rep-aug mean \

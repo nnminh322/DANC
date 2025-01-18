@@ -75,11 +75,16 @@ def parse_arguments():
     parser.add_argument('--asam-type', type=str, default="current")
     parser.add_argument('--gsam', default=True)
     parser.add_argument('--gsam-type', type=str, default="current")
-    ###
+    parser.add_argument('--rho', type=float, default=0.1)
+    parser.add_argument('--skip-first-cl', choices=["ucl", "tlcl", "ucl+tlcl", "none"], default="none")
+    parser.add_argument('--method', type=str)
+
+    ### GSAM config:
     parser.add_argument("--adaptive", default=True, type=bool, help="True if you want to use the Adaptive SAM.")
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size used in the training and validation loop.")
     parser.add_argument("--depth", default=16, type=int, help="Number of layers.")
     parser.add_argument("--dropout", default=0.0, type=float, help="Dropout rate.")
+    parser.add_argument("--epochs", default=200, type=int, help="Total number of epochs.")
     parser.add_argument("--label_smoothing", default=0.1, type=float, help="Use 0.0 for no label smoothing.")
     parser.add_argument("--learning_rate", default=0.1, type=float, help="Base learning rate at the start of the training.")
     parser.add_argument("--momentum", default=0.9, type=float, help="SGD Momentum.")
@@ -88,9 +93,8 @@ def parse_arguments():
     parser.add_argument("--rho_min", default=2.0, type=int, help="Rho parameter for SAM.")
     parser.add_argument("--alpha", default=0.4, type=int, help="Rho parameter for SAM.")
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
-    ###
-    parser.add_argument('--rho', type=float, default=0.1)
-    parser.add_argument('--skip-first-cl', choices=["ucl", "tlcl", "ucl+tlcl", "none"], default="none")
-    parser.add_argument('--method', type=str)
+    parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
+    ### End GSAM config
+
     args = parser.parse_args()
     return args
