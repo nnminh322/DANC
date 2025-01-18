@@ -71,7 +71,8 @@ def train(local_rank, args):
     optimizer = SGD(model.parameters(), lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay) #TODO: Hyper parameters
     if args.sam:
             base_optimizer = SGD
-            scheduler = CosineScheduler(T_max=args.epochs*len(dataset.train), max_value=args.learning_rate, min_value=0.0, optimizer=base_optimizer)
+            scheduler = CosineScheduler(T_max=args.epochs*75, max_value=args.learning_rate, min_value=0.0, optimizer=base_optimizer)
+            #because 75 is default 
             rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=scheduler, max_lr=args.learning_rate, min_lr=0.0, max_value=args.rho_max, min_value=args.rho_min)
             optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, model=model, gsam_alpha=args.alpha, rho_scheduler=rho_scheduler, adaptive=args.adaptive)
     # if args.amp:
@@ -193,8 +194,6 @@ def train(local_rank, args):
             model.train()
             logger.info("Training batch:")
             iter_cnt = 0
-            print('-'*50)
-            print(f'T_max=args.epochs*len(stage_loader) voi stage_loader =  {len(stage_loader)}')
             for bt, batch in enumerate(tqdm(stage_loader)):
                 iter_cnt += 1
 
@@ -590,6 +589,10 @@ def train(local_rank, args):
 
                     loss.backward()
                     optimizer.second_step(zero_grad=True)
+
+                    with torch.no_grad():
+                        scheduler.step()
+                        optimizer.update_rho_t()
                     
 
 
