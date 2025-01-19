@@ -131,59 +131,59 @@ class GSAM(torch.optim.Optimizer):
         else:
             return contextlib.ExitStack()
 
-    @torch.no_grad()
-    def set_closure(self, loss):
-        # create self.forward_backward_func, which is a function such that
-        # self.forward_backward_func() automatically performs forward and backward passes.
-        # This function does not take any arguments, and the inputs and targets data
-        # should be pre-set in the definition of partial-function
+    # @torch.no_grad()
+    # def set_closure(self, loss):
+    #     # create self.forward_backward_func, which is a function such that
+    #     # self.forward_backward_func() automatically performs forward and backward passes.
+    #     # This function does not take any arguments, and the inputs and targets data
+    #     # should be pre-set in the definition of partial-function
 
-        def get_grad():
-            self.base_optimizer.zero_grad()
-            with torch.enable_grad():
-                loss_value = loss.data.clone().detach()
-                loss.backward()
-            return loss_value
+    #     def get_grad():
+    #         self.base_optimizer.zero_grad()
+    #         with torch.enable_grad():
+    #             loss_value = loss.data.clone().detach()
+    #             loss.backward()
+    #         return loss_value
 
-        self.forward_backward_func = get_grad
+    #     self.forward_backward_func = get_grad
 
-    @torch.no_grad()
-    def step(self, closure=None):
+    # @torch.no_grad()
+    # def step(self, closure=None):
 
-        if closure:
-            get_grad = closure
-        else:
-            get_grad = self.forward_backward_func
+    #     if closure:
+    #         get_grad = closure
+    #     else:
+    #         get_grad = self.forward_backward_func
 
-        with self.maybe_no_sync():
-            # get gradient
-            loss_value = get_grad()
+    #     with self.maybe_no_sync():
+    #         # get gradient
+    #         loss_value = get_grad()
 
-            # perturb weights
-            self.perturb_weights(rho=self.rho_t)
+    #         # perturb weights
+    #         self.perturb_weights(rho=self.rho_t)
 
-            # disable running stats for second pass
-            disable_running_stats(self.model)
+    #         # disable running stats for second pass
+    #         disable_running_stats(self.model)
 
-            # get gradient at perturbed weights
-            get_grad()
+    #         # get gradient at perturbed weights
+    #         get_grad()
 
-            # decompose and get new update direction
-            self.gradient_decompose(self.alpha)
+    #         # decompose and get new update direction
+    #         self.gradient_decompose(self.alpha)
 
-            # unperturb
-            self.unperturb()
+    #         # unperturb
+    #         self.unperturb()
             
-        # synchronize gradients across workers
-        self._sync_grad()    
+    #     # synchronize gradients across workers
+    #     self._sync_grad()    
 
-        # update with new directions
-        self.base_optimizer.step()
+    #     # update with new directions
+    #     self.base_optimizer.step()
 
-        # enable running stats
-        enable_running_stats(self.model)
+    #     # enable running stats
+    #     enable_running_stats(self.model)
 
-        return loss_value
+    #     return loss_value
     
     def first_step(self,zero_grad = False):
         self.perturb_weights(rho=self.rho_t)
