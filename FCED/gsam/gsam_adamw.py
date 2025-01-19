@@ -61,7 +61,7 @@ class GSAM(torch.optim.Optimizer):
                     p.data.sub_(self.state[p]['e_w'])
 
     @torch.no_grad()
-    def gradient_decompose(self, alpha=0.05):
+    def gradient_decompose(self, alpha=0.08):
         # calculate inner product
         inner_prod = 0.0
         for group in self.param_groups:
