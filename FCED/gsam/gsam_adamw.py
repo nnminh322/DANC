@@ -2,22 +2,20 @@ import torch
 from .util import enable_running_stats, disable_running_stats
 import contextlib
 from torch.distributed import ReduceOp
-from torch.optim import SGD 
 
 class GSAM(torch.optim.Optimizer):
-    def __init__(self, params, base_optimizer, model, gsam_alpha, rho_scheduler, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
-        defaults = dict(adaptive=adaptive, **kwargs)
+    def __init__(self, params, base_optimizer, gsam_alpha, adaptive=False, rho=0.05, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
+        defaults = dict(rho=rho, adaptive=adaptive, **kwargs)
         super(GSAM, self).__init__(params, defaults)
-        self.model = model
-        self.base_optimizer = base_optimizer
-        self.param_groups = self.base_optimizer.state_dict()['param_groups']
+        # self.model = model
+        self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
+        self.param_groups = self.base_optimizer.param_groups
         self.adaptive = adaptive
-        self.rho_scheduler = rho_scheduler
         self.perturb_eps = perturb_eps
         self.alpha = gsam_alpha
         
         # initialize self.rho_t
-        self.update_rho_t()
+        # self.update_rho_t()
         
         # set up reduction for gradient across workers
         if grad_reduce.lower() == 'mean':
@@ -33,10 +31,11 @@ class GSAM(torch.optim.Optimizer):
         else:
             raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
     
-    @torch.no_grad()
-    def update_rho_t(self):
-        self.rho_t = self.rho_scheduler.step()
-        return self.rho_t
+    #their code has rho_max = rho_min -> dont need rho_scheduler
+    # @torch.no_grad()
+    # def update_rho_t(self):
+    #     self.rho_t = self.rho_scheduler.step()
+    #     return self.rho_t
 
     @torch.no_grad()
     def perturb_weights(self, rho=0.0):
@@ -126,11 +125,11 @@ class GSAM(torch.optim.Optimizer):
         super().load_state_dict(state_dict)
         self.base_optimizer.param_groups = self.param_groups
         
-    def maybe_no_sync(self):
-        if torch.distributed.is_initialized():
-            return self.model.no_sync()
-        else:
-            return contextlib.ExitStack()
+    # def maybe_no_sync(self):
+    #     if torch.distributed.is_initialized():
+    #         return self.model.no_sync()
+    #     else:
+    #         return contextlib.ExitStack()
 
     @torch.no_grad()
     def set_closure(self, loss):
@@ -148,46 +147,46 @@ class GSAM(torch.optim.Optimizer):
 
         self.forward_backward_func = get_grad
 
-    @torch.no_grad()
-    def step(self, closure=None):
+    # @torch.no_grad()
+    # def step(self, closure=None):
 
-        if closure:
-            get_grad = closure
-        else:
-            get_grad = self.forward_backward_func
+    #     if closure:
+    #         get_grad = closure
+    #     else:
+    #         get_grad = self.forward_backward_func
 
-        with self.maybe_no_sync():
-            # get gradient
-            loss_value = get_grad()
+    #     with self.maybe_no_sync():
+    #         # get gradient
+    #         loss_value = get_grad()
 
-            # perturb weights
-            self.perturb_weights(rho=self.rho_t)
+    #         # perturb weights
+    #         self.perturb_weights(rho=self.rho_t)
 
-            # disable running stats for second pass
-            disable_running_stats(self.model)
+    #         # disable running stats for second pass
+    #         disable_running_stats(self.model)
 
-            # get gradient at perturbed weights
-            get_grad()
+    #         # get gradient at perturbed weights
+    #         get_grad()
 
-            # decompose and get new update direction
-            self.gradient_decompose(self.alpha)
+    #         # decompose and get new update direction
+    #         self.gradient_decompose(self.alpha)
 
-            # unperturb
-            self.unperturb()
+    #         # unperturb
+    #         self.unperturb()
             
-        # synchronize gradients across workers
-        self._sync_grad()    
+    #     # synchronize gradients across workers
+    #     self._sync_grad()    
 
-        # update with new directions
-        self.base_optimizer.step()
+    #     # update with new directions
+    #     self.base_optimizer.step()
 
-        # enable running stats
-        enable_running_stats(self.model)
+    #     # enable running stats
+    #     enable_running_stats(self.model)
 
-        return loss_value
+    #     return loss_value
     
     def first_step(self,zero_grad = False):
-        self.perturb_weights(rho=self.rho_t)
+        self.perturb_weights(rho=self.rho)
         if zero_grad: self.zero_grad()
 
     def second_step(self, zero_grad = False):
