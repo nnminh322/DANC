@@ -91,7 +91,7 @@ def parse_arguments():
     # parser.add_argument("--threads", default=8, type=int, help="Number of CPU threads for dataloaders.")
     parser.add_argument("--rho_max", type=float, default=0.05)
     parser.add_argument("--rho_min", type=float, default=0.01)
-    parser.add_argument("--alpha", default=0.1, type=float, help="Rho parameter for SAM.")
+    parser.add_argument("--alpha", default=0.05, type=float, help="Rho parameter for SAM.")
     parser.add_argument("--weight_decay", default=0.0005, type=float, help="L2 weight decay.")
     # parser.add_argument("--width_factor", default=8, type=int, help="How many times wider compared to normal ResNet.")
     ### End GSAM config

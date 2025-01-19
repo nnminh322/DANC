@@ -678,8 +678,8 @@ def train(local_rank, args):
             torch.save(state, os.path.join(save_pth, save_name))
             os.remove(e_pth)
     
-    save_directory = "./saved_berted_model"
-    model.save_model(save_directory)
+    # save_directory = "./saved_berted_model"
+    # model.save_model(save_directory)
 
 
 
