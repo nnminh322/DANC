@@ -13,6 +13,7 @@ class GSAM(torch.optim.Optimizer):
         self.adaptive = adaptive
         self.perturb_eps = perturb_eps
         self.alpha = gsam_alpha
+        self.rho = rho
         
         # initialize self.rho_t
         # self.update_rho_t()
