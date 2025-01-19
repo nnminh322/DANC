@@ -70,11 +70,11 @@ def train(local_rank, args):
     model.to(device)
     optimizer = SGD(model.parameters(), lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay) #TODO: Hyper parameters
     if args.sam:
-            base_optimizer = SGD(model.parameters(), lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay)
+            base_optimizer = SGD
             scheduler = CosineScheduler(T_max=args.epochs*75, max_value=args.lr, min_value=0.0, optimizer=base_optimizer)
             #because 75 is default 
             rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=scheduler, max_lr=args.lr, min_lr=0.0, max_value=args.rho_max, min_value=args.rho_min)
-            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, model=model, gsam_alpha=args.alpha, rho_scheduler=rho_scheduler, adaptive=args.adaptive)
+            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, model=model, gsam_alpha=args.alpha, rho_scheduler=rho_scheduler, adaptive=args.adaptive, lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay)
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
     if args.parallel == 'DDP':

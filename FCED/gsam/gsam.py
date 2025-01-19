@@ -2,15 +2,14 @@ import torch
 from .util import enable_running_stats, disable_running_stats
 import contextlib
 from torch.distributed import ReduceOp
-from torch.optim import SGD 
 
 class GSAM(torch.optim.Optimizer):
     def __init__(self, params, base_optimizer, model, gsam_alpha, rho_scheduler, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
         defaults = dict(adaptive=adaptive, **kwargs)
         super(GSAM, self).__init__(params, defaults)
         self.model = model
-        self.base_optimizer = base_optimizer
-        self.param_groups = self.base_optimizer.state_dict()['param_groups']
+        self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
+        self.param_groups = self.base_optimizer.param_groups
         self.adaptive = adaptive
         self.rho_scheduler = rho_scheduler
         self.perturb_eps = perturb_eps
