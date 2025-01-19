@@ -19,18 +19,18 @@ class GSAM(torch.optim.Optimizer):
         # self.update_rho_t()
         
         # set up reduction for gradient across workers
-        if grad_reduce.lower() == 'mean':
-            if hasattr(ReduceOp, 'AVG'):
-                self.grad_reduce = ReduceOp.AVG
-                self.manual_average = False
-            else: # PyTorch <= 1.11.0 does not have AVG, need to manually average across processes
-                self.grad_reduce = ReduceOp.SUM
-                self.manual_average = True
-        elif grad_reduce.lower() == 'sum':
-            self.grad_reduce = ReduceOp.SUM
-            self.manual_average = False
-        else:
-            raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
+        # if grad_reduce.lower() == 'mean':
+        #     if hasattr(ReduceOp, 'AVG'):
+        #         self.grad_reduce = ReduceOp.AVG
+        #         self.manual_average = False
+        #     else: # PyTorch <= 1.11.0 does not have AVG, need to manually average across processes
+        #         self.grad_reduce = ReduceOp.SUM
+        #         self.manual_average = True
+        # elif grad_reduce.lower() == 'sum':
+        #     self.grad_reduce = ReduceOp.SUM
+        #     self.manual_average = False
+        # else:
+        #     raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
     
     #their code has rho_max = rho_min -> dont need rho_scheduler
     # @torch.no_grad()
@@ -39,7 +39,7 @@ class GSAM(torch.optim.Optimizer):
     #     return self.rho_t
 
     @torch.no_grad()
-    def perturb_weights(self, rho=0.0):
+    def perturb_weights(self, rho=0.05):
         grad_norm = self._grad_norm( weight_adaptive = self.adaptive )
         for group in self.param_groups:
             scale = rho / (grad_norm + self.perturb_eps)
@@ -61,7 +61,7 @@ class GSAM(torch.optim.Optimizer):
                     p.data.sub_(self.state[p]['e_w'])
 
     @torch.no_grad()
-    def gradient_decompose(self, alpha=0.0):
+    def gradient_decompose(self, alpha=0.1):
         # calculate inner product
         inner_prod = 0.0
         for group in self.param_groups:
