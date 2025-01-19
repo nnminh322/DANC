@@ -70,7 +70,7 @@ def train(local_rank, args):
     model.to(device)
     optimizer = SGD(model.parameters(), lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay) #TODO: Hyper parameters
     if args.sam:
-            base_optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
+            base_optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
             scheduler = CosineScheduler(T_max=args.epochs*75, max_value=args.lr, min_value=0.0, optimizer=base_optimizer)
             #because 75 is default 
             rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=scheduler, max_lr=args.lr, min_lr=0.0, max_value=args.rho_max, min_value=args.rho_min)
@@ -392,11 +392,12 @@ def train(local_rank, args):
                     else:
                         if (not args.sam) or (args.sam_type == "full"):
                             loss = loss + args.alpha * loss_fd + args.beta * loss_pd
-                if not args.sam:
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                else:
+                # if not args.sam:
+                #     optimizer.zero_grad()
+                #     loss.backward()
+                #     optimizer.step()
+                # else:
+                if True:
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.first_step(zero_grad=True)

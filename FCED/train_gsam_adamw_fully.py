@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.nn.functional import normalize
-from torch.optim import SGD
+from torch.optim import AdamW
 from utils import *
 from configs import parse_arguments
 from model import BertED
@@ -17,8 +17,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
-from gsam import *
-from gsam.gsam import GSAM
+from gsam.gsam_adamw import GSAM
 
 
 
@@ -68,13 +67,10 @@ def train(local_rank, args):
     streams_indexed = [[label2idx[l] for l in st] for st in streams]
     model = BertED(args.class_num+1, args.input_map) # define model
     model.to(device)
-    optimizer = SGD(model.parameters(), lr=args.lr,momentum=args.momentum,weight_decay=args.weight_decay) #TODO: Hyper parameters
+    optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999)) #TODO: Hyper parameters
     if args.sam:
-            base_optimizer = torch.optim.SGD(model.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
-            scheduler = CosineScheduler(T_max=args.epochs*75, max_value=args.lr, min_value=0.0, optimizer=base_optimizer)
-            #because 75 is default 
-            rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=scheduler, max_lr=args.lr, min_lr=0.0, max_value=args.rho_max, min_value=args.rho_min)
-            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, gsam_alpha=args.alpha, rho_scheduler=rho_scheduler, adaptive=args.adaptive)
+            base_optimizer = AdamW
+            optimizer = GSAM(params=model.parameters(), base_optimizer=base_optimizer, gsam_alpha=args.alpha, rho=args.rho, adaptive=args.adaptive, perturb_eps=1e-12, grad_reduce='mean', lr=args.lr, weight_decay=args.decay, eps=args.adamw_eps, betas=(0.9, 0.999))
     # if args.amp:
         # model, optimizer = amp.initialize(model, optimizer, opt_level="O1") 
     if args.parallel == 'DDP':
@@ -392,11 +388,12 @@ def train(local_rank, args):
                     else:
                         if (not args.sam) or (args.sam_type == "full"):
                             loss = loss + args.alpha * loss_fd + args.beta * loss_pd
-                if not args.sam:
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                else:
+                # if not args.sam:
+                #     optimizer.zero_grad()
+                #     loss.backward()
+                #     optimizer.step()
+                # else:
+                if True:
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.first_step(zero_grad=True)
@@ -590,10 +587,6 @@ def train(local_rank, args):
                     loss.backward()
                     optimizer.second_step(zero_grad=True)
 
-                    with torch.no_grad():
-                        scheduler.step()
-                        optimizer.update_rho_t()
-                    
 
 
                 

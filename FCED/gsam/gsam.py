@@ -4,11 +4,10 @@ import contextlib
 from torch.distributed import ReduceOp
 
 class GSAM(torch.optim.Optimizer):
-    def __init__(self, params, base_optimizer, model, gsam_alpha, rho_scheduler, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
+    def __init__(self, params, base_optimizer, gsam_alpha, rho_scheduler, adaptive=False, perturb_eps=1e-12, grad_reduce='mean', **kwargs):
         defaults = dict(adaptive=adaptive, **kwargs)
         super(GSAM, self).__init__(params, defaults)
-        self.model = model
-        self.base_optimizer = base_optimizer(self.param_groups, **kwargs)
+        self.base_optimizer = base_optimizer
         self.param_groups = self.base_optimizer.param_groups
         self.adaptive = adaptive
         self.rho_scheduler = rho_scheduler
@@ -84,19 +83,19 @@ class GSAM(torch.optim.Optimizer):
                 vertical = self.state[p]['old_g'] - cosine * old_grad_norm * p.grad.data / (new_grad_norm + self.perturb_eps)
                 p.grad.data.add_( vertical, alpha=-alpha)
 
-    @torch.no_grad()
-    def _sync_grad(self):
-        if torch.distributed.is_initialized(): # synchronize final gardients
-            for group in self.param_groups:
-                for p in group['params']:
-                    if p.grad is None: continue
-                    if self.manual_average:
-                        torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
-                        world_size = torch.distributed.get_world_size()
-                        p.grad.div_(float(world_size))
-                    else:
-                        torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
-        return
+    # @torch.no_grad()
+    # def _sync_grad(self):
+    #     if torch.distributed.is_initialized(): # synchronize final gardients
+    #         for group in self.param_groups:
+    #             for p in group['params']:
+    #                 if p.grad is None: continue
+    #                 if self.manual_average:
+    #                     torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
+    #                     world_size = torch.distributed.get_world_size()
+    #                     p.grad.div_(float(world_size))
+    #                 else:
+    #                     torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
+    #     return
 
     @torch.no_grad()
     def _grad_norm(self, by=None, weight_adaptive=False):
@@ -125,11 +124,11 @@ class GSAM(torch.optim.Optimizer):
         super().load_state_dict(state_dict)
         self.base_optimizer.param_groups = self.param_groups
         
-    def maybe_no_sync(self):
-        if torch.distributed.is_initialized():
-            return self.model.no_sync()
-        else:
-            return contextlib.ExitStack()
+    # def maybe_no_sync(self):
+    #     if torch.distributed.is_initialized():
+    #         return self.model.no_sync()
+    #     else:
+    #         return contextlib.ExitStack()
 
     # @torch.no_grad()
     # def set_closure(self, loss):

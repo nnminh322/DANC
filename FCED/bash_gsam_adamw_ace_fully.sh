@@ -10,7 +10,7 @@ do
                 do
                     for p in 0 1 2 3 4
                     do
-                        CUDA_VISIBLE_DEVICES=0 python train_gsam_sgd.py \
+                        CUDA_VISIBLE_DEVICES=0 python train_gsam_adamw_fully.py \
                             --data-root ./augmented_data \
                             --stream-root ./augmented_data \
                             --dataset $d \
@@ -28,7 +28,7 @@ do
                             --dweight_loss \
                             --rep-aug mean \
                             --distill mul \
-                            --epoch 50 \
+                            --epoch 30 \
                             --class-num $m \
                             --single-label \
                             --cl-aug $k \
